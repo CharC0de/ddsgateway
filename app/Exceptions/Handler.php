@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use GuzzleHttp\Exception\ClientException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -54,6 +55,12 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
+        if ($exception instanceof ClientException) {
+            $message = $exception->getResponse()->getBody();
+            $code = $exception->getCode();
+            return $this->errorMessage($message, $code);
+        }
+
         // http not found
         if ($exception instanceof HttpException) {
             $code = $exception->getStatusCode();
